@@ -1,2 +1,3 @@
-# pura-os
-PURA OS - A friendly Hinglish AI chatbot assistant. All-rounder bhai who helps with study, business, coding, life advice &amp; more! 🚀
+# Copy this file to .env and add your OpenAI API key
+OPENAI_API_KEY=your_api_key_here
+PORT=3000

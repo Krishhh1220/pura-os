@@ -1,0 +1,88 @@
+const chat = document.getElementById('chat');
+const msgInput = document.getElementById('msgInput');
+const sendBtn = document.getElementById('sendBtn');
+
+function formatTime() {
+  return new Date().toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+function createMessage(type, text) {
+  const wrapper = document.createElement('div');
+  wrapper.className = `msg ${type}`;
+
+  const content = document.createElement('div');
+  content.textContent = text;
+  wrapper.appendChild(content);
+
+  const time = document.createElement('span');
+  time.className = 'time';
+  time.textContent = `${formatTime()} ✓✓`;
+  wrapper.appendChild(time);
+
+  return wrapper;
+}
+
+function addTypingIndicator() {
+  const typing = document.createElement('div');
+  typing.className = 'msg bot';
+  typing.id = 'typing';
+  typing.textContent = 'typing...';
+  chat.appendChild(typing);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function removeTypingIndicator() {
+  const typing = document.getElementById('typing');
+  if (typing) typing.remove();
+}
+
+async function sendMsg() {
+  const text = msgInput.value.trim();
+  if (!text) return;
+
+  chat.appendChild(createMessage('user', text));
+  msgInput.value = '';
+  chat.scrollTop = chat.scrollHeight;
+
+  addTypingIndicator();
+
+  try {
+    const response = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text })
+    });
+
+    const data = await response.json();
+    removeTypingIndicator();
+
+    if (data.reply) {
+      chat.appendChild(createMessage('bot', data.reply));
+    } else {
+      chat.appendChild(createMessage('bot', 'Bhai kuch error ho gaya, thoda refresh kar le. 😅'));
+    }
+
+    chat.scrollTop = chat.scrollHeight;
+  } catch (error) {
+    removeTypingIndicator();
+    chat.appendChild(createMessage('bot', 'Network issue aaya hai bhai, thoda wait kar le. 😅'));
+    chat.scrollTop = chat.scrollHeight;
+  }
+}
+
+msgInput.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') {
+    sendMsg();
+  }
+});
+
+sendBtn.addEventListener('click', sendMsg);
+
+const welcome = createMessage(
+  'bot',
+  'Walaikum Assalam bhai! 😎\n\nMain PURA OS hu — tera all-rounder bhai. Padhai, business, coding, life, perfume kuch bhi puch le, sab bata dunga!\n\nBolo kya help chahiye?'
+);
+chat.appendChild(welcome);
